@@ -1,0 +1,8 @@
+# Normalise line endings so a Windows checkout and a Linux CI produce the same
+# bytes. The repository stores LF; only Windows-native scripts keep CRLF.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.png binary
+*.ico binary

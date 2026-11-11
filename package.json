@@ -1,0 +1,65 @@
+{
+  "name": "dsh-fleet-monitor",
+  "version": "0.1.0",
+  "description": "Multi-host server monitoring for the dsh web GUI: agentless metrics over the SSH credentials you already have, a sidebar panel, SQLite history, and agent tools. No agent to install, no telemetry, loopback-only.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.9.0"
+  },
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "engines": {
+      "dsh": ">=0.2.2-rc.1"
+    },
+    "icon": "icon.svg",
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-layout"
+      ],
+      "platform": "web"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.19.0",
+    "ssh2": "^1.17.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh": ">=0.2.2-rc.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE",
+    "icon.svg"
+  ],
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "monitoring",
+    "ssh",
+    "server",
+    "metrics",
+    "agentless",
+    "fleet"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "check": "node --test \"test/**/*.test.mjs\""
+  }
+}

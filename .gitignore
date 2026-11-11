@@ -1,0 +1,34 @@
+# --- secrets & local state: NEVER commit --------------------------------
+# Host inventories, credentials and keys copied out of a real machine.
+dsh-ssh.json
+*.key
+*.pem
+*.ppk
+id_rsa*
+id_ed25519*
+.ssh/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.log
+.env
+.env.*
+# Exports from password managers / SSH clients (Termius, Xshell, ...)
+*.csv
+!test/fixtures/*.csv
+*export*.json
+*导出*
+
+# --- dependencies -------------------------------------------------------
+node_modules/
+.pnpm-store/
+
+# --- build / tooling ----------------------------------------------------
+dist/
+*.tsbuildinfo
+coverage/
+.vitest/
+.DS_Store
+Thumbs.db
