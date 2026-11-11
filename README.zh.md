@@ -119,7 +119,7 @@
 
 ## 安装
 
-### 方式一：手工装到现有 profile（当前推荐）
+### 方式一：手工装到现有 profile（改代码时用这个）
 
 DSH 的插件是 **profile 里的一个 bundle**，所以要动三个地方。
 
@@ -158,13 +158,18 @@ DSH 的插件是 **profile 里的一个 bundle**，所以要动三个地方。
 
 5. 完全退出 DSH 再打开。侧边栏出现「机群监控」。
 
-### 方式二：npm
+### 方式二：从 npm 装（推荐）
 
-```bash
+```powershell
+cd "$env:USERPROFILE\.dsh\profiles\desktop"
 pnpm add dsh-fleet-monitor
 ```
 
-装完仍要执行上面第 3、4 步（bundles 与 insert），然后重启。`npm publish` 之后这里会补上一条命令式的说明。
+（macOS / Linux：`cd ~/.dsh/profiles/desktop`。）
+
+装完仍需执行上面第 3、4 步（`dsh.profile.bundles` 加一行、`cordis.patch.yml` 加 insert），然后完全退出 DSH 再打开。
+
+这条路径会把包放进 profile 的 `node_modules`，`@deepseek-ai/dsh` 与 `react` 由宿主提供、不会重复安装；`ssh2` 与 `@deepseek-ai/schemastery` 作为真实依赖一起装下来，省掉手工建三条链接的麻烦。版本见 [npm](https://www.npmjs.com/package/dsh-fleet-monitor)。
 
 ---
 

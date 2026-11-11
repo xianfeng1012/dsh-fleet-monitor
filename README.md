@@ -87,6 +87,17 @@ A DSH plugin is a **bundle in a profile**, so three things have to line up.
 
 5. Quit DSH completely and start it again. **Fleet Monitor** appears in the sidebar.
 
+### Or install from npm
+
+The manual link above is the path to take while changing the code. To just use it:
+
+```bash
+cd ~/.dsh/profiles/desktop        # Windows: cd "$env:USERPROFILE\.dsh\profiles\desktop"
+pnpm add dsh-fleet-monitor
+```
+
+Then do steps 3 and 4 above (the `dsh.profile.bundles` line and the `cordis.patch.yml` insert) and restart DSH. `@deepseek-ai/dsh` and `react` come from the host and are not duplicated; `ssh2` and `@deepseek-ai/schemastery` install as real dependencies, which saves you the three symlinks. Latest version on [npm](https://www.npmjs.com/package/dsh-fleet-monitor).
+
 ---
 
 ## Configuration

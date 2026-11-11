@@ -1,5 +1,13 @@
 # 上架指南 / Publishing
 
+> **当前状态（2026-11-12）**
+>
+> - 仓库：<https://github.com/xianfeng1012/dsh-fleet-monitor>（public，6 个 topic 已加）
+> - npm：**已发布 `dsh-fleet-monitor@0.1.0`** → <https://www.npmjs.com/package/dsh-fleet-monitor>
+> - 剩下一步：**北京时间 2026-11-13 03:11 之后**才能提 PR 到 awesome（仓库满 1 天是硬门槛，CI 会查 `created_at`）
+>
+> 发布时踩过的坑记在这里：`pnpm publish` 会走 npm 11 的**分阶段发布**，在 registry 留一个 `0.0.0-stage` 占位包，真正的版本卡在暂存区并返回 `E409 Cannot publish over previously staged version "0.1.0"`；`npm stage list` 又查不到它。清掉占位包（`npm.cmd unpublish ... --force`）之后 0.1.0 才落到正式区。**以后发版一律用 `npm.cmd publish`，别再走 `pnpm publish`。**
+
 这份文档说明怎么把 `dsh-fleet-monitor` 放进 DSH 的插件市场。**结论先说**：DSH 的"市场"由两个独立清单组成，收录方式不一样。
 
 | 清单 | 谁在维护 | 怎么进去 | 要不要审核 |
