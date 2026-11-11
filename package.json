@@ -45,7 +45,9 @@
     "README.md",
     "README.zh.md",
     "LICENSE",
-    "icon.svg"
+    "icon.svg",
+    "screenshots.json",
+    "assets"
   ],
   "keywords": [
     "dsh-plugin",
@@ -58,6 +60,19 @@
     "fleet"
   ],
   "license": "MIT",
+  "author": "dsh-fleet-monitor contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xianfeng1012/dsh-fleet-monitor.git"
+  },
+  "homepage": "https://github.com/xianfeng1012/dsh-fleet-monitor#readme",
+  "bugs": {
+    "url": "https://github.com/xianfeng1012/dsh-fleet-monitor/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "test": "node --test \"test/**/*.test.mjs\"",
     "check": "node --test \"test/**/*.test.mjs\""

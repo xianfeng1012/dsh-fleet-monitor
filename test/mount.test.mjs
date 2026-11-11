@@ -35,7 +35,8 @@ after(() => {
  * @returns the context plus the record of what it received.
  */
 function fakeContext() {
-  const record = { routes: [], tools: [], sections: [], effects: [], listeners: [], disposed: 0 }
+  const record = { routes: [],
+    upgrades: [], tools: [], sections: [], effects: [], listeners: [], disposed: 0 }
   const disposer = (bucket) => () => {
     record.disposed += 1
     const index = bucket.findIndex((item) => item.disposed === false)
@@ -59,6 +60,16 @@ function fakeContext() {
         assert.equal(typeof route.handler, 'function')
         const entry = { route, disposed: false }
         record.routes.push(entry)
+        return () => {
+          entry.disposed = true
+          record.disposed += 1
+        }
+      },
+      registerUpgrade(upgrade) {
+        assert.equal(typeof upgrade.path, 'string')
+        assert.equal(typeof upgrade.handler, 'function')
+        const entry = { upgrade, disposed: false }
+        record.upgrades.push(entry)
         return () => {
           entry.disposed = true
           record.disposed += 1
@@ -158,24 +169,44 @@ test('apply registers every surface inside a labelled effect', async () => {
   const { ctx, record } = fakeContext()
   await host.apply(ctx, fakeConfig(dshHome))
   try {
-    assert.equal(record.routes.length, 7, 'overview, events, history, refresh, status, hosts, test')
+    assert.equal(record.routes.length, 27, 'the dashboard, service monitor, alerts, notifications, tasks and the file browser each register their routes')
     assert.deepEqual(
       record.routes.map((entry) => entry.route.path).sort(),
       [
+        '/api/dsh-fleet-monitor/alerts',
+        '/api/dsh-fleet-monitor/alerts/silence',
+        '/api/dsh-fleet-monitor/detail',
         '/api/dsh-fleet-monitor/events',
+        '/api/dsh-fleet-monitor/fs/delete',
+        '/api/dsh-fleet-monitor/fs/download',
+        '/api/dsh-fleet-monitor/fs/ls',
+        '/api/dsh-fleet-monitor/fs/mkdir',
+        '/api/dsh-fleet-monitor/fs/rename',
+        '/api/dsh-fleet-monitor/fs/stat',
+        '/api/dsh-fleet-monitor/fs/upload',
         '/api/dsh-fleet-monitor/history',
         '/api/dsh-fleet-monitor/hosts',
+        '/api/dsh-fleet-monitor/meta',
+        '/api/dsh-fleet-monitor/notifications',
+        '/api/dsh-fleet-monitor/notifications/groups',
+        '/api/dsh-fleet-monitor/notifications/test',
         '/api/dsh-fleet-monitor/overview',
         '/api/dsh-fleet-monitor/refresh',
+        '/api/dsh-fleet-monitor/services',
+        '/api/dsh-fleet-monitor/services/results',
+        '/api/dsh-fleet-monitor/settings',
         '/api/dsh-fleet-monitor/status',
+        '/api/dsh-fleet-monitor/tasks',
+        '/api/dsh-fleet-monitor/tasks/run',
+        '/api/dsh-fleet-monitor/tasks/runs',
         '/api/dsh-fleet-monitor/test',
       ],
     )
 
-    assert.equal(record.tools.length, 3)
+    assert.equal(record.tools.length, 7)
     assert.deepEqual(
       record.tools.map((entry) => entry.tool.name).sort(),
-      ['fleet_history', 'fleet_refresh', 'fleet_snapshot'],
+      ['fleet_alerts', 'fleet_history', 'fleet_host', 'fleet_refresh', 'fleet_services', 'fleet_snapshot', 'fleet_tasks'],
     )
     for (const { tool } of record.tools) {
       assert.equal(typeof tool.description, 'string')
@@ -201,8 +232,8 @@ test('apply registers every surface inside a labelled effect', async () => {
     assert.equal(record.sections[0].section.order, 620)
     assert.match(record.sections[0].section.text, /fleet_snapshot/)
 
-    // routes + tools + prompt + collector + the mount guard.
-    assert.equal(record.effects.length, 5)
+    // routes + terminal + tools + prompt + collector + the mount guard.
+    assert.equal(record.effects.length, 6)
     assert.deepEqual(
       record.effects.map((effect) => effect.label).sort(),
       [
@@ -210,6 +241,7 @@ test('apply registers every surface inside a labelled effect', async () => {
         'dsh-fleet-monitor: mount guard',
         'dsh-fleet-monitor: prompt',
         'dsh-fleet-monitor: routes',
+        'dsh-fleet-monitor: terminal',
         'dsh-fleet-monitor: tools',
       ],
     )
@@ -231,7 +263,7 @@ test('the guard is released on unload so a reload can mount again', async () => 
   const dshHome = tempRoot()
   const first = fakeContext()
   await host.apply(first.ctx, fakeConfig(dshHome))
-  assert.equal(first.record.routes.length, 7)
+  assert.equal(first.record.routes.length, 27)
   unmount(first.record)
 
   // A reload evaluates the same module again; without a released guard this mount
@@ -239,7 +271,7 @@ test('the guard is released on unload so a reload can mount again', async () => 
   const second = fakeContext()
   await host.apply(second.ctx, fakeConfig(dshHome))
   try {
-    assert.equal(second.record.routes.length, 7, 'the reload mounted for real')
+    assert.equal(second.record.routes.length, 27, 'the reload mounted for real')
   } finally {
     unmount(second.record)
   }
@@ -257,14 +289,15 @@ test('a concurrent second mount queues instead of double-registering', async () 
     // Releasing the first must replay the queued mount.
     unmount(first.record)
     await new Promise((resolve) => setImmediate(resolve))
-    assert.equal(second.record.routes.length, 7, 'the queued mount was replayed')
+    assert.equal(second.record.routes.length, 27, 'the queued mount was replayed')
     unmount(second.record)
   }
 })
 
 test('a host without the optional capabilities still mounts', async () => {
   const dshHome = tempRoot()
-  const record = { routes: [], sections: [], effects: [] }
+  const record = { routes: [],
+    upgrades: [], sections: [], effects: [] }
   const ctx = {
     effect(run, label) {
       const inner = run()
@@ -272,14 +305,17 @@ test('a host without the optional capabilities still mounts', async () => {
       return inner
     },
     on() { return () => {} },
-    webServer: { register(route) { record.routes.push(route); return () => {} } },
+    webServer: {
+      register(route) { record.routes.push(route); return () => {} },
+      registerUpgrade(upgrade) { record.upgrades.push(upgrade); return () => {} },
+    },
     // tools and systemPrompt are deliberately absent.
   }
   await host.apply(ctx, fakeConfig(dshHome))
   try {
-    assert.equal(record.routes.length, 7, 'routes do not depend on the optional services')
+    assert.equal(record.routes.length, 27, 'routes do not depend on the optional services')
     assert.equal(record.sections.length, 0)
-    assert.equal(record.effects.length, 3, 'routes, the collector, and the mount guard')
+    assert.equal(record.effects.length, 4, 'routes, terminal, the collector, and the mount guard')
   } finally {
     for (const effect of [...record.effects].reverse()) effect.dispose()
   }

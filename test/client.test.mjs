@@ -33,6 +33,12 @@ globalThis.window = {
       registrations.push(entry)
     },
   },
+  // The page reads its active section out of the hash on every render, and the
+  // section hook subscribes to `hashchange`. Both have to exist before the component
+  // runs, even though this test never navigates.
+  location: { hash: '' },
+  addEventListener: () => {},
+  removeEventListener: () => {},
 }
 
 // Setting the global has to happen before the bundle runs, so this import is dynamic.
@@ -204,4 +210,95 @@ test('a missing slot service is reported, not thrown', () => {
   } finally {
     console.warn = original
   }
+})
+
+/**
+ * Flatten an element tree built by the React stub.
+ *
+ * Function components are invoked, because React would: a test that stops at the
+ * component boundary can only see the outer shell, and the shell is exactly the part
+ * that never breaks.
+ */
+function walk(node, out = []) {
+  if (node === null || node === undefined) return out
+  if (Array.isArray(node)) {
+    for (const item of node) walk(item, out)
+    return out
+  }
+  if (typeof node === 'object' && node.type !== undefined) {
+    if (typeof node.type === 'function') return walk(node.type(node.props), out)
+    out.push(node)
+    for (const child of node.children ?? []) walk(child, out)
+  }
+  return out
+}
+
+/**
+ * Render the page component once through the stub.
+ *
+ * The stub's hooks return their initial value and its effects never run, so this is a
+ * single static render: enough to prove the component body executes without a live
+ * host, without a network, and without DOM globals beyond the ones above.
+ */
+function renderPage(hash = '') {
+  const exports = loadExports()
+  const { ctx, record } = fakeClientContext()
+  exports.apply(ctx)
+  const previous = globalThis.window.location.hash
+  globalThis.window.location.hash = hash
+  try {
+    const main = record.slots.find((slot) => slot.registered?.name === 'main')
+    return walk(main.component())
+  } finally {
+    globalThis.window.location.hash = previous
+    unmount(record)
+  }
+}
+
+test('the page renders one navigation tab per section and lands on the overview', () => {
+  const rendered = renderPage()
+  const tabs = rendered.filter((node) => /^fm-tab(\s|$)/.test(String(node.props?.className ?? '')))
+  assert.equal(tabs.length, 6, 'one tab per section')
+  assert.equal(
+    tabs.filter((node) => String(node.props.className).includes(' on')).length,
+    1,
+    'exactly one tab is active',
+  )
+  assert.equal(
+    tabs[0].props.className.includes(' on'),
+    true,
+    'the first tab (overview) is the default view',
+  )
+})
+
+test('the host table only appears in the servers section', () => {
+  const rendered = renderPage()
+  // With `window.location.hash` empty the page starts on the overview, so the table
+  // and the filter toolbar must both be absent.
+  assert.equal(
+    rendered.filter((node) => node.type === 'table').length,
+    0,
+    'no table on the overview',
+  )
+  assert.equal(
+    rendered.filter((node) => String(node.props?.className ?? '') === 'fm-toolbar').length,
+    0,
+    'no filter toolbar on the overview',
+  )
+})
+
+test('the overview still shows the fleet counters', () => {
+  const rendered = renderPage()
+  const stats = rendered.filter((node) => String(node.props?.className ?? '') === 'fm-stat')
+  assert.equal(stats.length, 4, 'total, online, alerting, offline')
+})
+
+test('the services section renders its own panel, not the pending placeholder', () => {
+  // The stub locale answers every key with "translated", so text cannot tell the two
+  // views apart. The section wrappers can: only the wired-up sections use `fm-panel`.
+  const panels = (hash) => renderPage(hash)
+    .filter(node => String(node.props?.className ?? '') === 'fm-panel')
+  assert.equal(panels('#/services').length, 1, 'services renders a real panel')
+  assert.equal(panels('#/alerts').length, 1, 'alerts renders a real panel')
+  assert.equal(panels('#/tasks').length, 1, 'tasks has its own panel now')
 })
