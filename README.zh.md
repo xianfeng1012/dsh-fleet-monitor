@@ -1,5 +1,15 @@
 # dsh-fleet-monitor · 机群监控
 
+<p align="center">
+  <a href="https://github.com/xianfeng1012/dsh-fleet-monitor/blob/main/README.md">English</a>
+  &nbsp;·&nbsp;
+  <b>简体中文</b>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/xianfeng1012/dsh-fleet-monitor">源码</a>
+  &nbsp;·&nbsp;
+  <a href="https://www.npmjs.com/package/dsh-fleet-monitor">npm</a>
+</p>
+
 给 DSH Web GUI 加一块**多机 SSH 机群监控**面板：用你已经配置好的 SSH 凭据，把 `dsh-ssh` 与 `~/.ssh/config` 里的所有主机一次性拉进一个控制台，看在线状态、CPU、内存、磁盘、网络、进程，点开看历史曲线，也能在面板里直接添加/编辑/删除主机。
 
 **不需要在被监控的机器上装任何 agent。** 采集器是一段 POSIX `sh`，通过已有的 SSH 连接跑一次就回来；插件只读你本机已有的凭据文件，不联网、不发遥测。

@@ -1,5 +1,15 @@
 # dsh-fleet-monitor · Fleet Monitor
 
+<p align="center">
+  <b>English</b>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/xianfeng1012/dsh-fleet-monitor/blob/main/README.zh.md">简体中文</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/xianfeng1012/dsh-fleet-monitor">Source</a>
+  &nbsp;·&nbsp;
+  <a href="https://www.npmjs.com/package/dsh-fleet-monitor">npm</a>
+</p>
+
 A **multi-host SSH monitoring** panel for the DSH web GUI. It reuses the SSH credentials you already have, pulls every host from `dsh-ssh` and `~/.ssh/config` into one console, and shows online state, CPU, memory, disk, network, and process counts — with per-host history charts and add/edit/delete from the panel itself.
 
 **Nothing to install on the monitored machines.** The collector is a POSIX `sh` script that runs once over an existing SSH connection. The plugin only reads credentials already on your machine: no network egress, no telemetry.
