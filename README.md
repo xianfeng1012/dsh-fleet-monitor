@@ -114,6 +114,8 @@ Host contracts that cost real hours to discover, listed so they cost nobody else
 2. `apply` must be **synchronous**. The loader does not await its return value, so a rejection inside an `async` apply becomes an unhandled rejection and is swallowed.
 3. A `volatile()` field resolves to a **`{ get(): T }` reference**, not a value. Reading `config.x` directly yields an object, every clamp falls back to its default, and the settings page silently stops working.
 4. One route per `path` — the route registry rejects duplicate `(kind, path)`, so CRUD dispatches on `method` inside a single handler.
+5. Every tool must declare `output: { schema, render }`. **A tool missing it throws, and cordis rolls back every effect of that entry** — the routes registered before it disappear too, so the symptom is indistinguishable from "the routes were never written". This is the easiest one to misread: the unit suite stays green while every API answers 401 in the live host.
+6. The host answers **401, not 404, for an `/api/*` path it has no route for**. A 401 therefore means "no route registered", not "bad credentials". To see the real load error, install the plugin into `--profile web` and start it from the CLI — stderr then prints `entry did not activate`.
 
 ---
 
@@ -122,7 +124,7 @@ Host contracts that cost real hours to discover, listed so they cost nobody else
 Zero build: `lib/*.js` is the artifact. Restart DSH to reload the host half.
 
 ```bash
-node --test "test/**/*.test.mjs"   # 46 tests, no external dependencies
+node --test "test/**/*.test.mjs"   # 51 tests, no external dependencies
 ```
 
 Covered: collector parsing and rate derivation (including counter rollback), identical row shape across both storage backends, `~/.ssh/config` parsing, the loopback fence and CRUD validation on every route, mount/unmount/waiter replay, and the browser-half bundle contract.

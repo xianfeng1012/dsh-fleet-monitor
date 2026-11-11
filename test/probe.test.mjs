@@ -184,3 +184,20 @@ test('a non-positive interval yields no rates', () => {
   const current = parseProbe(SAMPLE).metrics
   assert.equal(deriveRates(current, current).cpuPct, undefined)
 })
+test('the disk aggregate filters by mount point, never by device path', () => {
+  // Regression from a live host: the collector used to drop any row whose
+  // SOURCE matched /^\/(proc|sys|dev)/, which is every real block device
+  // (/dev/vda1, /dev/sda2). Root filesystems reported disk_total_kb=0 and the
+  // panel showed an empty disk column on machines that were plainly fine.
+  // The mount-point column is the one that identifies a pseudo mount.
+  assert.ok(
+    !PROBE_SCRIPT.includes('dev ~ /^\\/(proc|sys|dev)/'),
+    'the source column must not be filtered for /dev — real disks live there',
+  )
+  assert.ok(PROBE_SCRIPT.includes('mnt=$7'), 'the -T branch reads the mount point column')
+  assert.ok(PROBE_SCRIPT.includes('mnt=$6'), 'the -P fallback reads its own mount point column')
+  assert.ok(PROBE_SCRIPT.includes('mnt ~ /^\\/(proc|sys|dev)(\\/|$)/'), 'pseudo mounts are dropped by mount point')
+  // The two branches disagree on column numbers: -T inserts the type column, so
+  // the -P fallback must add $2/$3 rather than the -T branch's $3/$4.
+  assert.ok(PROBE_SCRIPT.includes('total+=$2; used+=$3'), 'the -P fallback keeps its own column offsets')
+})

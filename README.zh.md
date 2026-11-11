@@ -143,6 +143,8 @@ pnpm add dsh-fleet-monitor
 2. `apply` 必须是**同步**函数。宿主不 await 它的返回值，`async` 里抛出的错会被吞成 unhandled rejection。
 3. `volatile()` 字段解析出来是 **`{ get(): T }` 引用**，不是值。直接读 `config.x` 拿到的是对象，所有 clamp 都会退化成默认值，设置页改了等于没改。
 4. 同一个 `path` 只能注册一条路由，CRUD 要在 handler 内部按 `method` 分发。
+5. 每个 tool 必须声明 `output: { schema, render }`。**缺一个就会抛错，而 cordis 会把该 entry 的全部 effect 一起回滚** —— 先注册的路由也一起消失，症状和"路由没写"一模一样。这条最容易误判：单测全绿，真实宿主里每个 API 都 401。
+6. 宿主对**不存在的 `/api/*` 返回 401 而不是 404**。所以「401」不代表鉴权问题，只代表路由没注册；想看真正的加载错误，把插件装进 `--profile web` 用 CLI 启动，stderr 里会有 `entry did not activate`。
 
 ---
 
@@ -151,10 +153,10 @@ pnpm add dsh-fleet-monitor
 零构建：`lib/*.js` 就是产物，改完直接生效（重启 DSH 加载 host 半）。
 
 ```bash
-node --test "test/**/*.test.mjs"   # 46 条，零外部依赖
+node --test "test/**/*.test.mjs"   # 51 条，零外部依赖
 ```
 
-覆盖：采集脚本解析与差分（含计数器回绕）、两个存储后端同一行形状、`~/.ssh/config` 解析、每条路由的 loopback fence 与 CRUD 校验、mount/卸载/waiters 重放、浏览器半的 bundle 契约。
+覆盖：采集脚本解析与差分（含计数器回绕、按挂载点而非设备名过滤磁盘）、两个存储后端同一行形状、`~/.ssh/config` 解析、每条路由的 loopback fence 与 CRUD 校验、tool 的 `output` 契约与缺列样本传 null 不传 NaN、mount/卸载/waiters 重放、浏览器半的 bundle 契约。
 
 ---
 

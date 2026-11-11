@@ -181,6 +181,14 @@ test('apply registers every surface inside a labelled effect', async () => {
       assert.equal(typeof tool.description, 'string')
       assert.equal(typeof tool.execute, 'function')
       assert.equal(typeof tool.isConcurrencySafe, 'function')
+      // The host rejects the whole registration without this: "tool X must
+      // declare output { schema, render, presentationMeta? }". One missing
+      // output tore down every effect of this plugin, routes included, which is
+      // exactly why the panel answered 401 in the live host while the unit
+      // harness stayed green.
+      assert.equal(typeof tool.output, 'object', `${tool.name} must declare output`)
+      assert.equal(typeof tool.output.render, 'function', `${tool.name} must declare output.render`)
+      assert.equal(typeof tool.output.schema, 'object', `${tool.name} must declare output.schema`)
     }
     // Only the read-only tools may overlap with a sibling call; refresh opens real
     // SSH connections and must be serialised.
