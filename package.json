@@ -1,6 +1,6 @@
 {
   "name": "dsh-fleet-monitor",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Multi-host server monitoring for the dsh web GUI: agentless metrics over the SSH credentials you already have, a sidebar panel, SQLite history, and agent tools. No agent to install, no telemetry, loopback-only.",
   "type": "module",
   "engines": {

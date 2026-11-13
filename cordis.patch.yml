@@ -1,13 +1,15 @@
 # dsh-fleet-monitor bundle patch
 #
-# The plugin's own node is inserted from the user layer, the same way dsh-purge
-# does it — in $DSH_HOME/profiles/<profile>/cordis.patch.yml:
+# This is the row that makes the plugin load. It is the `dsh.bundle.patch`
+# entry declared in package.json, applied as a profile bundle layer over
+# dsh-base — so `dsh plugin --profile <profile> add dsh-fleet-monitor` gets a
+# working plugin with no manual editing of the profile.
 #
-#   - insert:
-#       - id: fleet-monitor
-#         name: dsh-fleet-monitor
-#
-# Inserting the same id here as well queues it twice and the loader rejects the
-# duplicate ("already queued"), so this file only ever tightens an entry the
-# user layer already declared.
-[]
+# The one thing not to do is insert `fleet-monitor` a second time from the
+# user layer ($DSH_HOME/profiles/<profile>/cordis.patch.yml): two inserts of
+# the same id queue it twice and the loader rejects the duplicate. Declaring
+# the package in the profile's `dsh.profile.bundles` list is enough for this
+# file to run.
+- insert:
+    - id: fleet-monitor
+      name: dsh-fleet-monitor
