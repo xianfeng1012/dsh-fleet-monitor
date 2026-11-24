@@ -130,7 +130,7 @@ PR 描述可以照这个写：
 >
 > - Agentless: reads host inventory from `dsh-ssh.json` and `~/.ssh/config`, then collects over SSH itself — nothing to install on the targets.
 > - Sidebar panel with six sections (overview / servers / services / alerts / tasks / settings), per-host hardware inventory from a slower sweep (temperature, GPU, listening ports, per-mount disk, per-NIC traffic), 24-hour availability strips, WebSocket terminal, SFTP file browser.
-> - 185 tests, zero-build (plain ESM, no bundler), two runtime dependencies (`@deepseek-ai/schemastery`, `ssh2`).
+> - 201 tests, zero-build (plain ESM, no bundler), two runtime dependencies (`@deepseek-ai/schemastery`, `ssh2`).
 > - All routes are loopback-fenced; credentials are never returned by the API and never stored by the plugin.
 >
 > `package.json` declares `dsh.bundle.patch`, so it installs with `dsh plugin add dsh-fleet-monitor`.
@@ -201,7 +201,7 @@ PR 描述可以照这个写：
 ```powershell
 cd "E:\claude-project\termius导出账号\dsh-fleet-monitor"
 
-# 1. 全绿（当前 185 条）
+# 1. 全绿（当前 201 条）
 & "C:\Program Files\nodejs\node.exe" --test "test/**/*.test.mjs"
 
 # 2. 语法
